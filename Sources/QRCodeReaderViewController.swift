@@ -66,17 +66,14 @@ public class QRCodeReaderViewController: UIViewController {
 
     codeReader.didFindCode = { [weak self] resultAsObject in
       if let weakSelf = self {
-        if let qrv = builder.readerView.displayable as? QRCodeReaderView {
-          qrv.addGreenBorder()
-        }
         weakSelf.completionBlock?(resultAsObject)
         weakSelf.delegate?.reader(weakSelf, didScanResult: resultAsObject)
       }
     }
 
-    codeReader.didFailDecoding = {
-      if let qrv = builder.readerView.displayable as? QRCodeReaderView {
-        qrv.addRedBorder()
+    codeReader.didFailDecoding = { [weak self] in
+      if let weakSelf = self {
+        weakSelf.delegate?.readerDidFail(weakSelf)
       }
     }
 
@@ -178,5 +175,26 @@ public class QRCodeReaderViewController: UIViewController {
   
   @objc func toggleTorchAction(_ button: ToggleTorchButton) {
     codeReader.toggleTorch()
+  }
+
+  public var readerState: ReaderOverlayState? {
+    set {
+      if let overlayView = builder.readerView.displayable.overlayView as? ReaderOverlayView, let readerState = newValue {
+        overlayView.state = readerState
+      }
+    }
+
+    get {
+      if let overlayView = builder.readerView.displayable.overlayView as? ReaderOverlayView {
+        return overlayView.state
+      }
+      return nil
+    }
+  }
+
+  public func setOverlayText(to text: String) {
+    if let overlayView = builder.readerView.displayable.overlayView as? ReaderOverlayView {
+      overlayView.labelText = text
+    }
   }
 }

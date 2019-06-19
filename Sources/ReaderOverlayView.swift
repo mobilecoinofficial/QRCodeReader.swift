@@ -70,15 +70,23 @@ public final class ReaderOverlayView: UIView {
 
   private lazy var label = configureLabel()
 
-  private var overlay: CAShapeLayer = {
-    var overlay             = CAShapeLayer()
+  private var frameOverlay: CAShapeLayer = {
+    let overlay = CAShapeLayer()
     overlay.backgroundColor = UIColor.clear.cgColor
-    overlay.fillColor       = UIColor.clear.cgColor
-    overlay.strokeColor     = UIColor.white.cgColor
-    overlay.lineWidth       = 4
+    overlay.fillColor = UIColor.clear.cgColor
+    overlay.strokeColor = UIColor.white.cgColor
+    overlay.lineWidth = 4
     overlay.lineDashPattern = []
-    overlay.lineDashPhase   = 0
+    overlay.lineDashPhase = 0
     overlay.lineCap = .round
+    return overlay
+  }()
+
+  private var dimOverlay: CAShapeLayer = {
+    let overlay = CAShapeLayer()
+    overlay.fillRule = .evenOdd
+    overlay.backgroundColor = UIColor.clear.cgColor
+    overlay.fillColor = UIColor.black.cgColor
     return overlay
   }()
 
@@ -122,6 +130,12 @@ public final class ReaderOverlayView: UIView {
     }
   }
 
+  var overlayOpacity: Float = 0.0 {
+      didSet {
+          dimOverlay.opacity = overlayOpacity
+      }
+  }
+
   // MARK: - Initialzers
 
   override init(frame: CGRect) {
@@ -139,7 +153,7 @@ public final class ReaderOverlayView: UIView {
   // MARK: - Drawing method
 
   public override func draw(_ rect: CGRect) {
-    overlay.removeAllAnimations()
+    frameOverlay.removeAllAnimations()
 
     let innerRect = CGRect(
       x: rect.width * rectOfInterest.minX,
@@ -148,22 +162,27 @@ public final class ReaderOverlayView: UIView {
       height: rect.height * rectOfInterest.height
     )
 
+    let dimOverlayPath = UIBezierPath(roundedRect: rect, cornerRadius: 0.0)
+    dimOverlayPath.append(UIBezierPath(roundedRect: innerRect, cornerRadius: 5))
+    dimOverlayPath.usesEvenOddFillRule = true
+    dimOverlay.path = dimOverlayPath.cgPath
+
     let labelOffset = CGFloat(40.0)
     label.frame = CGRect(x: innerRect.origin.x, y: innerRect.origin.y - labelOffset, width: innerRect.width, height: labelOffset)
 
-    overlay.path = UIBezierPath(roundedRect: innerRect, cornerRadius: 5).cgPath
-    overlay.lineDashPattern = []
+    frameOverlay.path = UIBezierPath(roundedRect: innerRect, cornerRadius: 5).cgPath
+    frameOverlay.lineDashPattern = []
 
     // Gradient colors animation inteferes with rotating gradient direction enimation
     CATransaction.begin()
     CATransaction.setValue(true, forKey: kCATransactionDisableActions)
     gradient.colors = [brightGradientColor, dimGradientColor]
-    gradient.mask = overlay
+    gradient.mask = frameOverlay
     gradient.frame = rect
     CATransaction.commit()
 
     if state == .reading {
-      overlay.lineDashPattern = Default.lineDashPattern
+      frameOverlay.lineDashPattern = Default.lineDashPattern
       setupLineAnimation()
     }
 
@@ -179,12 +198,12 @@ extension ReaderOverlayView {
   private func setupLineAnimation() {
     let lineDashPhaseAnimation = CABasicAnimation(keyPath: "lineDashPhase")
     lineDashPhaseAnimation.fromValue = 0
-    lineDashPhaseAnimation.toValue = overlay.lineDashPattern?.reduce(0) { $0 - $1.intValue } ?? 0
+    lineDashPhaseAnimation.toValue = frameOverlay.lineDashPattern?.reduce(0) { $0 - $1.intValue } ?? 0
     lineDashPhaseAnimation.repeatCount = .infinity
     lineDashPhaseAnimation.speed = 0.2
     lineDashPhaseAnimation.autoreverses = true
 
-    overlay.add(lineDashPhaseAnimation, forKey: "line")
+    frameOverlay.add(lineDashPhaseAnimation, forKey: "line")
   }
 
   private func setupGradientAnimation() {
@@ -225,7 +244,8 @@ extension ReaderOverlayView {
 extension ReaderOverlayView {
 
   private func setupViews() {
-    layer.addSublayer(overlay)
+    layer.addSublayer(frameOverlay)
+    layer.addSublayer(dimOverlay)
     layer.addSublayer(gradient)
 
     addSubview(label)

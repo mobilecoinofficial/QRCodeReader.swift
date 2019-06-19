@@ -123,6 +123,12 @@ public final class QRCodeReaderViewControllerBuilder {
     }
   }
 
+  public var overlayOpacity: Float = 0.0 {
+    didSet {
+      (readerView.displayable.overlayView as? ReaderOverlayView)?.overlayOpacity = overlayOpacity
+    }
+  }
+
   // MARK: - Initializing a Flap View
 
   /**

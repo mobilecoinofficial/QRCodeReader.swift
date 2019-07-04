@@ -38,6 +38,7 @@ class ViewController: UIViewController, QRCodeReaderViewControllerDelegate {
         $0.showOverlayView        = true
         $0.rectOfInterest         = CGRect(x: 0.2, y: 0.2, width: 0.6, height: 0.6)
       })
+      (previewView.overlayView as? ReaderOverlayView)?.overlayOpacity = 0.8
     }
   }
   lazy var reader: QRCodeReader = QRCodeReader()
@@ -46,7 +47,7 @@ class ViewController: UIViewController, QRCodeReaderViewControllerDelegate {
       $0.reader                  = QRCodeReader(metadataObjectTypes: [.qr], captureDevicePosition: .back)
       $0.showTorchButton         = true
       $0.preferredStatusBarStyle = .lightContent
-      $0.showOverlayView        = true
+      $0.showOverlayView         = true
       $0.rectOfInterest          = CGRect(x: 0.2, y: 0.2, width: 0.6, height: 0.6)
       
       $0.reader.stopScanningWhenCodeIsFound = false
@@ -112,6 +113,15 @@ class ViewController: UIViewController, QRCodeReaderViewControllerDelegate {
     reader.startScanning()
   }
 
+  @IBAction func changeStyleAction(_ sender: Any) {
+    // Round-robin trigger
+    guard let overlayView = previewView.overlayView as? ReaderOverlayView, let currentCaseIndex = ReaderOverlayState.allCases.firstIndex(of: overlayView.state) else {
+      return
+    }
+    overlayView.state = ReaderOverlayState.allCases[(currentCaseIndex + 1) % ReaderOverlayState.allCases.count]
+    overlayView.labelText = String(describing: overlayView.state)
+  }
+
   // MARK: - QRCodeReader Delegate Methods
 
   func reader(_ reader: QRCodeReaderViewController, didScanResult result: QRCodeReaderResult) {
@@ -127,6 +137,10 @@ class ViewController: UIViewController, QRCodeReaderViewControllerDelegate {
 
       self?.present(alert, animated: true, completion: nil)
     }
+  }
+
+  func readerDidFail(_ reader: QRCodeReaderViewController) {
+    print("Reader did fail")
   }
 
   func reader(_ reader: QRCodeReaderViewController, didSwitchCamera newCaptureDevice: AVCaptureDeviceInput) {

@@ -39,6 +39,13 @@ public protocol QRCodeReaderViewControllerDelegate: class {
   func reader(_ reader: QRCodeReaderViewController, didScanResult result: QRCodeReaderResult)
 
   /**
+   Tells the delegate that the reader failed to scan a code.
+
+   - parameter reader: A code reader object informing the delegate about the scan result failure.
+   */
+  func readerDidFail(_ reader: QRCodeReaderViewController)
+
+  /**
    Tells the delegate that the camera was switched by the user
 
    - parameter reader: A code reader object informing the delegate about the scan result.

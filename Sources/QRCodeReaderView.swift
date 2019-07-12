@@ -142,7 +142,7 @@ final public class QRCodeReaderView: UIView, QRCodeReaderDisplayable {
 
   private class var sharedApplication: UIApplication? {
     let selector = NSSelectorFromString("sharedApplication")
-    return UIApplication.perform(selector)?.takeRetainedValue() as? UIApplication
+    return UIApplication.perform(selector)?.takeUnretainedValue() as? UIApplication
   }
 
   private func addComponents() {

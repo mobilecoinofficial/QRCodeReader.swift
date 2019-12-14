@@ -40,7 +40,9 @@ public final class ReaderOverlayView: UIView {
   // MARK: - Defaults
 
   private enum Default {
-    static let lineDashPattern: [NSNumber] = [28.0, 7.0]
+    static let cornerWidth = 60.0
+    static let cornerRadius = 7.0
+    static let strokeWidth = 4.0
     static let labelFont = UIFont.boldSystemFont(ofSize: 14.0)
   }
 
@@ -75,9 +77,7 @@ public final class ReaderOverlayView: UIView {
     overlay.backgroundColor = UIColor.clear.cgColor
     overlay.fillColor = UIColor.clear.cgColor
     overlay.strokeColor = UIColor.white.cgColor
-    overlay.lineWidth = 4
-    overlay.lineDashPattern = []
-    overlay.lineDashPhase = 0
+    overlay.lineWidth = CGFloat(Default.strokeWidth)
     overlay.lineCap = .round
     return overlay
   }()
@@ -170,8 +170,12 @@ public final class ReaderOverlayView: UIView {
     let labelOffset = CGFloat(40.0)
     label.frame = CGRect(x: innerRect.origin.x, y: innerRect.origin.y - labelOffset, width: innerRect.width, height: labelOffset)
 
-    frameOverlay.path = UIBezierPath(roundedRect: innerRect, cornerRadius: 5).cgPath
-    frameOverlay.lineDashPattern = []
+    let path = UIBezierPath()
+    path.append(createTopLeft(innerRect))
+    path.append(createTopRight(innerRect))
+    path.append(createBottomRight(innerRect))
+    path.append(createBottomLeft(innerRect))
+    frameOverlay.path = path.cgPath
 
     // Gradient colors animation inteferes with rotating gradient direction enimation
     CATransaction.begin()
@@ -181,11 +185,6 @@ public final class ReaderOverlayView: UIView {
     gradient.frame = rect
     CATransaction.commit()
 
-    if state == .reading {
-      frameOverlay.lineDashPattern = Default.lineDashPattern
-      setupLineAnimation()
-    }
-
     setupGradientAnimation()
   }
 
@@ -194,17 +193,6 @@ public final class ReaderOverlayView: UIView {
 // MARK: - Animations
 
 extension ReaderOverlayView {
-
-  private func setupLineAnimation() {
-    let lineDashPhaseAnimation = CABasicAnimation(keyPath: "lineDashPhase")
-    lineDashPhaseAnimation.fromValue = 0
-    lineDashPhaseAnimation.toValue = frameOverlay.lineDashPattern?.reduce(0) { $0 - $1.intValue } ?? 0
-    lineDashPhaseAnimation.repeatCount = .infinity
-    lineDashPhaseAnimation.speed = 0.2
-    lineDashPhaseAnimation.autoreverses = true
-
-    frameOverlay.add(lineDashPhaseAnimation, forKey: "line")
-  }
 
   private func setupGradientAnimation() {
     let animationGroup = CAAnimationGroup()
@@ -260,5 +248,44 @@ extension ReaderOverlayView {
     label.alpha = 0.8
     return label
   }
+
+  //  ⌜  ⌝
+  //  ⌞  ⌟
+
+  private func createTopLeft(_ frame: CGRect) -> UIBezierPath {
+      let topLeft = UIBezierPath()
+      topLeft.move(to: CGPoint(x: Double(frame.origin.x) + Default.strokeWidth/2, y: Double(frame.origin.y) + Default.cornerRadius + Default.cornerWidth))
+      topLeft.addLine(to: CGPoint(x: Double(frame.origin.x) + Default.strokeWidth/2, y: Double(frame.origin.y) + Default.cornerRadius))
+      topLeft.addQuadCurve(to: CGPoint(x: Double(frame.origin.x) + Default.cornerRadius, y: Double(frame.origin.y) + Default.strokeWidth/2), controlPoint: CGPoint(x: Double(frame.origin.x) + Default.strokeWidth/2, y: Double(frame.origin.y) + Default.strokeWidth/2))
+      topLeft.addLine(to: CGPoint(x: Double(frame.origin.x) + Default.cornerRadius + Default.cornerWidth, y: Double(frame.origin.y) + Default.strokeWidth/2))
+      return topLeft
+   }
+
+   private func createTopRight(_ frame: CGRect) -> UIBezierPath {
+     let topRight = UIBezierPath()
+     topRight.move(to: CGPoint(x: Double(frame.origin.x) + Double(frame.width) - Default.cornerRadius - Default.cornerWidth, y: Double(frame.origin.y) + Default.strokeWidth/2))
+     topRight.addLine(to: CGPoint(x: Double(frame.origin.x) + Double(frame.width) - Default.cornerRadius, y: Double(frame.origin.y) + Default.strokeWidth/2))
+     topRight.addQuadCurve(to: CGPoint(x: Double(frame.origin.x) + Double(frame.width) - Default.strokeWidth/2, y: Double(frame.origin.y) + Default.cornerRadius), controlPoint: CGPoint(x: Double(frame.origin.x) + Double(frame.width) - Default.strokeWidth/2, y: Double(frame.origin.y) + Default.strokeWidth/2))
+     topRight.addLine(to: CGPoint(x: Double(frame.origin.x) + Double(frame.width)-Default.strokeWidth/2, y: Double(frame.origin.y) + Default.cornerRadius+Default.cornerWidth))
+     return topRight
+   }
+
+   private func createBottomRight(_ frame: CGRect) -> UIBezierPath {
+     let bottomRight = UIBezierPath()
+     bottomRight.move(to: CGPoint(x: Double(frame.origin.x) + Double(frame.width)-Default.strokeWidth/2, y: Double(frame.origin.y) + Double(frame.height) - Default.cornerRadius - Default.cornerWidth))
+     bottomRight.addLine(to: CGPoint(x: Double(frame.origin.x) + Double(frame.width)-Default.strokeWidth/2, y: Double(frame.origin.y) + Double(frame.height) - Default.cornerRadius))
+     bottomRight.addQuadCurve(to: CGPoint(x: Double(frame.origin.x) + Double(frame.width)-Default.cornerRadius, y: Double(frame.origin.y) + Double(frame.height) - Default.strokeWidth/2), controlPoint: CGPoint(x: Double(frame.origin.x) + Double(frame.width) - Default.strokeWidth/2, y: Double(frame.origin.y) + Double(frame.height) - Default.strokeWidth/2))
+     bottomRight.addLine(to: CGPoint(x: Double(frame.origin.x) + Double(frame.width) - Default.cornerRadius - Default.cornerWidth, y: Double(frame.origin.y) + Double(frame.height) - Default.strokeWidth/2))
+     return bottomRight
+   }
+
+   private func createBottomLeft(_ frame: CGRect) -> UIBezierPath {
+     let bottomLeft = UIBezierPath()
+     bottomLeft.move(to: CGPoint(x: Double(frame.origin.x) + Default.cornerRadius + Default.cornerWidth, y: Double(frame.origin.y) + Double(frame.width) - Default.strokeWidth/2))
+     bottomLeft.addLine(to: CGPoint(x: Double(frame.origin.x) + Default.cornerRadius, y: Double(frame.origin.y) + Double(frame.height)-Default.strokeWidth/2))
+     bottomLeft.addQuadCurve(to: CGPoint(x: Double(frame.origin.x) + Default.strokeWidth/2, y: Double(frame.origin.y) + Double(frame.height) - Default.cornerRadius), controlPoint: CGPoint(x: Double(frame.origin.x) + Default.strokeWidth/2, y: Double(frame.origin.y) + Double(frame.height) - Default.strokeWidth/2))
+     bottomLeft.addLine(to: CGPoint(x: Double(frame.origin.x) + Default.strokeWidth/2, y: Double(frame.origin.y) + Double(frame.height) - Default.cornerRadius-Default.cornerWidth))
+     return bottomLeft
+   }
 
 }

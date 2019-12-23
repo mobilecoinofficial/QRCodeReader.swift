@@ -110,15 +110,16 @@ public final class QRCodeReaderViewControllerBuilder {
   /**
    Specifies a rectangle of interest for limiting the search area for visual metadata.
 
-   The value of this property is a CGRect that determines the receiver's rectangle of interest for each frame of video. The rectangle's origin is top left and is relative to the coordinate space of the device providing the metadata. Specifying a rectOfInterest may improve detection performance for certain types of metadata. The default value of this property is the value CGRectMake(0, 0, 1, 1). Metadata objects whose bounds do not intersect with the rectOfInterest will not be returned.
+   The value of this property is a CGFloat that determines the receiver's rectangle of interest relative width for each frame of video. Specifying a rectOfInterestRelativeWidth may improve detection performance for certain types of metadata. Metadata objects whose bounds do not intersect with the reactangle of interest will not be returned.
   */
-  public var rectOfInterest: CGRect = CGRect(x: 0, y: 0, width: 1, height: 1) {
+  public var rectOfInterestRelativeWidth: CGFloat = 0.5 {
     didSet {
+      guard let overlayView = readerView.displayable.overlayView else { return }
       reader.metadataOutput.rectOfInterest = CGRect(
-        x: min(max(rectOfInterest.origin.x, 0), 1),
-        y: min(max(rectOfInterest.origin.y, 0), 1),
-        width: min(max(rectOfInterest.width, 0), 1),
-        height: min(max(rectOfInterest.height, 0), 1)
+        x: min(max(overlayView.bounds.origin.x, 0), 1),
+        y: min(max(overlayView.bounds.origin.y, 0), 1),
+        width: min(max(overlayView.bounds.width, 0), 1),
+        height: min(max(overlayView.bounds.height, 0), 1)
       )
     }
   }

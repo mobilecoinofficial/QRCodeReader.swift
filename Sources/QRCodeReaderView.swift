@@ -113,7 +113,7 @@ final public class QRCodeReaderView: UIView, QRCodeReaderDisplayable {
     }
 
     if let readerOverlayView = overlayView as? ReaderOverlayView {
-      readerOverlayView.rectOfInterest = builder.rectOfInterest
+      readerOverlayView.rectOfInterestRelativeWidth = builder.rectOfInterestRelativeWidth
     }
   }
 

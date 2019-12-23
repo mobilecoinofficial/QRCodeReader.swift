@@ -120,7 +120,7 @@ public final class ReaderOverlayView: UIView {
     return strokeColor.withAlphaComponent(0.0).cgColor
   }
 
-  public var labelText: String = ReaderOverlayState.ready.rawValue {
+  public var labelText: String = "" {
     didSet {
       DispatchQueue.main.async {
         UIView.animate(withDuration: 0.2, animations: {
@@ -132,7 +132,7 @@ public final class ReaderOverlayView: UIView {
     }
   }
 
-  var rectOfInterest: CGRect = CGRect(x: 0, y: 0, width: 1, height: 1) {
+  var rectOfInterestRelativeWidth: CGFloat = 0.5 {
     didSet {
       setNeedsDisplay()
     }
@@ -163,11 +163,12 @@ public final class ReaderOverlayView: UIView {
   public override func draw(_ rect: CGRect) {
     frameOverlay.removeAllAnimations()
 
+    // innerRect is always a square centered in the middle of the superview
     let innerRect = CGRect(
-      x: rect.width * rectOfInterest.minX,
-      y: rect.height * rectOfInterest.minY,
-      width: rect.width * rectOfInterest.width,
-      height: rect.height * rectOfInterest.height
+      x: rect.width * (1 - rectOfInterestRelativeWidth) / 2,
+      y: rect.height / 2 - rect.width * rectOfInterestRelativeWidth / 2,
+      width: rect.width * rectOfInterestRelativeWidth,
+      height: rect.width * rectOfInterestRelativeWidth
     )
 
     let dimOverlayPath = UIBezierPath(roundedRect: rect, cornerRadius: 0.0)
@@ -175,7 +176,7 @@ public final class ReaderOverlayView: UIView {
     dimOverlayPath.usesEvenOddFillRule = true
     dimOverlay.path = dimOverlayPath.cgPath
 
-    let labelOffset = CGFloat(40.0)
+    let labelOffset = CGFloat(80.0)
     label.frame = CGRect(x: innerRect.origin.x, y: innerRect.origin.y - labelOffset, width: innerRect.width, height: labelOffset)
 
     let path = UIBezierPath()
@@ -194,7 +195,7 @@ public final class ReaderOverlayView: UIView {
     gradient.frame = rect
     CATransaction.commit()
 
-//    setupGradientAnimation()
+    setupGradientAnimation()
   }
 
 }

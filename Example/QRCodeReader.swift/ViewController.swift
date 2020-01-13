@@ -36,6 +36,7 @@ class ViewController: UIViewController, QRCodeReaderViewControllerDelegate {
         $0.showSwitchCameraButton = false
         $0.showCancelButton       = false
         $0.showOverlayView        = true
+        $0.rectOfInterestRelativeWidth = 0.75
       })
       (previewView.overlayView as? ReaderOverlayView)?.overlayOpacity = 0.8
     }
@@ -49,6 +50,7 @@ class ViewController: UIViewController, QRCodeReaderViewControllerDelegate {
       $0.showOverlayView         = true
       
       $0.reader.stopScanningWhenCodeIsFound = false
+      $0.rectOfInterestRelativeWidth = 0.75
     }
     
     return QRCodeReaderViewController(builder: builder)

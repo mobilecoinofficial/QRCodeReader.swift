@@ -114,12 +114,11 @@ public final class QRCodeReaderViewControllerBuilder {
   */
   public var rectOfInterestRelativeWidth: CGFloat = 0.5 {
     didSet {
-      guard let overlayView = readerView.displayable.overlayView else { return }
       reader.metadataOutput.rectOfInterest = CGRect(
-        x: min(max(overlayView.bounds.origin.x, 0), 1),
-        y: min(max(overlayView.bounds.origin.y, 0), 1),
-        width: min(max(overlayView.bounds.width, 0), 1),
-        height: min(max(overlayView.bounds.height, 0), 1)
+        x: min(max(0.5 - rectOfInterestRelativeWidth/2, 0), 1),
+        y: min(max(0.5 - rectOfInterestRelativeWidth/2, 0), 1),
+        width: min(max(rectOfInterestRelativeWidth, 0), 1),
+        height: min(max(rectOfInterestRelativeWidth, 0), 1)
       )
     }
   }

@@ -63,7 +63,7 @@ public final class ReaderOverlayView: UIView {
   // MARK: - UI Variables
 
   public var readingColor = UIColor(red: 1, green: 204/255, blue: 0, alpha: 1) // marigold
-  public var validColor = UIColor(red: 76/255, green: 217/255, blue: 100/255, alpha: 1) // weirdGreen
+  public var validColor = UIColor(red: 0.004, green: 0.902, blue: 0.627, alpha: 1) // acidGreen
   public var invalidColor = UIColor(red: 1.0, green: 59/255, blue: 49/255, alpha: 1) // orangeyRed
   public var readyColor = UIColor.white
 
